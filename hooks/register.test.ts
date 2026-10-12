@@ -30,8 +30,6 @@ type Past = { role: string; text: string }
 type Session = {
   /** The name the person gave it, as Claude Code lists it. */
   name?: string
-  /** The process ids running now, when the process list can be had at all. */
-  alive?: readonly number[] | null
   past?: readonly Past[]
   /** Subagents running now; the test changes it as they start and end. */
   agents?: number
@@ -78,12 +76,6 @@ const world = (on: On, disk: Disk, session: Session = {}) => {
     return { result: 'ok' } as never
   })
   on('process.run', (_$, e) => {
-    if (e.argv[0] === 'tasklist' || e.argv[0] === 'ps') {
-      const alive = session.alive === undefined ? [100] : session.alive
-      const stdout = (alive ?? []).map(pid => (e.argv[0] === 'ps' ? ` ${pid}` : `"claude.exe","${pid}","Console","1","300,000 K"`)).join(NEWLINE)
-
-      return { value: { exitCode: alive === null ? 1 : 0, stdout, stderr: '' } } as never
-    }
     const stdout = e.argv.includes('--show-toplevel') ? 'C:/work/proj/.claude/worktrees/feature-a' : 'feat/x'
 
     return { value: { exitCode: 0, stdout, stderr: '' } } as never
@@ -142,13 +134,6 @@ const put = (disk: Disk, id: string, entry: Partial<Entry>, mtimeMs = NOW - 1_00
       ...entry,
     }),
     mtimeMs,
-  })
-
-// a session as Claude Code lists it, the mod not loaded into it
-const list = (disk: Disk, pid: number, one: Record<string, unknown>) =>
-  disk.set(`${SESSIONS}/${pid}.json`, {
-    text: JSON.stringify({ pid, sessionId: `s${pid}`, cwd: 'C:/work/other', kind: 'interactive', status: 'idle', updatedAt: NOW - 120_000, ...one }),
-    mtimeMs: NOW - 120_000,
   })
 
 const start = ($: Engine) =>
@@ -841,63 +826,13 @@ test('marks itself gone when the session ends', KO, async ($, on) => {
   expect(own(disk).phase).toBe('gone')
 })
 
-test('a session without the mod is on the board as Claude Code lists it', KO, async ($, on) => {
+test('a session list that does not read leaves the session to go by its folder', KO, async ($, on) => {
   const disk: Disk = new Map()
-  world(on, disk, { alive: [100, 200, 300, 400] })
-  list(disk, 200, { name: '검토 세션', status: 'busy' })
-  list(disk, 300, { status: 'waiting', cwd: 'C:/work/api' })
-  list(disk, 400, { name: '쉬는 세션' })
+  world(on, disk, { name: '머지 세션' })
+  disk.set(`${SESSIONS}/100.json`, { text: '{"pid":100,"sessionId":"me"}}}junk', mtimeMs: NOW })
 
   await start($)
-  await board($)
-  const texts = await band($)
 
-  expect(texts).toContain('검토 세션')
-  expect(texts).toContain('일함')
-  expect(texts).toContain('api')
-  expect(texts).toContain('질문')
-  expect(texts).toContain('쉬는 세션')
-})
-
-test('a listed session whose process ended, or whose file does not read, is not drawn', KO, async ($, on) => {
-  const disk: Disk = new Map()
-  world(on, disk, { alive: [100, 200] })
-  list(disk, 200, { name: '산 세션' })
-  list(disk, 300, { name: '죽은 세션' })
-  disk.set(`${SESSIONS}/500.json`, { text: '{"pid":500,"sessionId":"s500"}}}junk', mtimeMs: NOW })
-
-  await start($)
-  await board($)
-  const texts = await band($)
-
-  expect(texts).toContain('산 세션')
-  expect(texts).not.toContain('죽은 세션')
-})
-
-test('a session that writes its own file is drawn from that file, once', KO, async ($, on) => {
-  const disk: Disk = new Map()
-  world(on, disk, { alive: [100, 200] })
-  list(disk, 200, { sessionId: 'a', name: '머지 세션', status: 'idle' })
-  put(disk, 'a', { name: '머지 세션', phase: 'done', note: '다 올렸다' })
-
-  await start($)
-  await board($)
-  const texts = await band($)
-
-  expect(texts.split('머지 세션').length - 1).toBe(1)
-  expect(texts).toContain('다 올렸다')
-})
-
-test('with no process list to be had, only the sessions that write their own file are drawn', KO, async ($, on) => {
-  const disk: Disk = new Map()
-  world(on, disk, { alive: null })
-  list(disk, 200, { name: '모르는 세션', status: 'busy' })
-  put(disk, 'a', { name: '아는 세션' })
-
-  await start($)
-  await board($)
-  const texts = await band($)
-
-  expect(texts).toContain('아는 세션')
-  expect(texts).not.toContain('모르는 세션')
+  expect(own(disk).name).toBeUndefined()
+  expect(own(disk).where).toBe('feature-a')
 })

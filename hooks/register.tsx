@@ -8,7 +8,6 @@ const BEAT_MS = 30_000
 const POLL_MS = 5_000
 // A session that missed three beats is taken for dead: its file is skipped.
 const STALE_MS = 90_000
-const PIDS_MS = 30_000
 const MINUTE_MS = 60_000
 const LINE_CHARS = 160
 // A session that finished calls for the person this long; then its color goes
@@ -369,17 +368,15 @@ const configDir = async ($: EngineInterface) => {
   return set ?? (home === undefined ? undefined : `${home}/.claude`)
 }
 
-// What Claude Code itself keeps of each of its sessions on this machine: one
+// The name the person gave this session, as Claude Code itself lists it: one
 // file a process, under `sessions` in its folder. It is not a documented
-// interface: a file that does not read as expected is passed over, and with
-// none readable the board is what the mod's own files say, as before.
-type Listed = { id: string; pid: number; name?: string; cwd: string; status: string; since: number }
-
-const listed = async ($: EngineInterface): Promise<Listed[]> => {
+// interface: a file that does not read as expected is passed over, and the
+// session then goes by its folder.
+const nameOf = async ($: EngineInterface) => {
   const config = await configDir($)
   const dir = config === undefined ? undefined : `${config}/sessions`
   const files = dir === undefined ? [] : await $.fs.list(dir).catch(() => [])
-  const found: Listed[] = []
+  const id = await $.session.id()
 
   for (const file of files) {
     if (file.kind !== 'file' || !file.name.endsWith('.json')) {
@@ -387,68 +384,16 @@ const listed = async ($: EngineInterface): Promise<Listed[]> => {
     }
     try {
       const one = JSON.parse(String(await $.fs.read(`${dir}/${file.name}`))) as Record<string, unknown>
-      const [id, pid, cwd] = [textOf(one.sessionId), countOf(one.pid), textOf(one.cwd)]
-      if (id !== undefined && pid !== undefined && cwd !== undefined && one.kind === 'interactive') {
-        found.push({
-          id,
-          pid,
-          cwd,
-          name: textOf(one.name) || undefined,
-          status: textOf(one.status) ?? '',
-          since: countOf(one.statusUpdatedAt) ?? countOf(one.updatedAt) ?? 0,
-        })
+      if (one.sessionId === id) {
+        return textOf(one.name) || undefined
       }
     } catch {
       // left by a process that ended mid-write, or of a shape not known here
     }
   }
 
-  return found
+  return undefined
 }
-
-// The name the person gave this session, as Claude Code lists it.
-const nameOf = async ($: EngineInterface) => {
-  const id = await $.session.id()
-
-  return (await listed($)).find(one => one.id === id)?.name
-}
-
-// A session's file stays behind when its process ends, and is not rewritten
-// while the session rests: only the process list says which still run. Asked
-// once in a while, not on each poll. Undefined: the list could not be had.
-let pids: { at: number; alive: ReadonlySet<number> | undefined } | undefined
-
-const alivePids = async ($: EngineInterface, now: number) => {
-  if (pids !== undefined && now - pids.at < PIDS_MS) {
-    return pids.alive
-  }
-  const isWindows = (await $.env.get('OS')) === 'Windows_NT'
-  const ran = await $.process
-    .run(isWindows ? ['tasklist', '/FO', 'CSV', '/NH'] : ['ps', '-A', '-o', 'pid='], { timeoutMs: 5000 })
-    .catch(() => undefined)
-  const alive =
-    ran?.exitCode === 0
-      ? new Set(
-          ran.stdout
-            .split(/\r?\n/)
-            .map(line => Number(isWindows ? line.split('","')[1] : line.trim()))
-            .filter(pid => Number.isInteger(pid) && pid > 0),
-        )
-      : undefined
-  pids = { at: now, alive }
-
-  return alive
-}
-
-// A session the mod is not loaded into, as far as Claude Code's own list tells:
-// whether it is at work or waits, not what on.
-const entryOf = (one: Listed): Entry => ({
-  name: one.name,
-  where: basename(one.cwd),
-  branch: '',
-  phase: one.status === 'busy' || one.status === 'shell' ? 'working' : one.status === 'waiting' ? 'asking' : 'idle',
-  since: one.since,
-})
 
 const boardDir = async ($: EngineInterface) => {
   const config = await configDir($)
@@ -521,8 +466,6 @@ const poll = async ($: EngineInterface) => {
   const now = await $.clock.now()
   const files = dir === undefined ? [] : await $.fs.list(dir).catch(() => [])
   const live: Entry[] = []
-  // the sessions that speak for themselves, by id
-  const told = new Set([ownFile])
 
   for (const file of files) {
     const isLive =
@@ -535,20 +478,11 @@ const poll = async ($: EngineInterface) => {
     }
     try {
       const entry = parseEntry(JSON.parse(String(await $.fs.read(`${dir}/${file.name}`))))
-      if (entry !== undefined) {
-        told.add(file.name)
-      }
       if (entry !== undefined && entry.phase !== 'gone') {
         live.push(entry)
       }
     } catch {
       // half-written or unreadable: the next poll reads it again
-    }
-  }
-  const alive = await alivePids($, now)
-  for (const one of alive === undefined ? [] : await listed($)) {
-    if (!told.has(`${one.id}.json`) && alive?.has(one.pid) === true) {
-      live.push(entryOf(one))
     }
   }
   // this window's session can be the one waited for

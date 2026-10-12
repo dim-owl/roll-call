@@ -25,7 +25,7 @@ claude plugin marketplace add dim-owl/roll-call
 claude plugin install roll-call@roll-call
 ```
 
-Sessions that were already open pick the mod up after `/reload-plugins`. A session the mod is not loaded into still gets a row, with less on it: its name or folder, and whether it works, waits for you, or rests. What it works on, what it asks and what it has running are only known of sessions that have the mod.
+Sessions that were already open pick the mod up after `/reload-plugins`. A session shows on the board only if the mod is loaded in it.
 
 To update: `claude plugin marketplace update roll-call`, then `claude plugin update roll-call@roll-call`, then `/reload-plugins`. An install is a copy, so nothing changes until you update. To remove: `claude plugin uninstall roll-call@roll-call`, and delete the `roll-call` folder under your Claude Code folder.
 
@@ -81,7 +81,7 @@ Know this before installing: your prompts' first lines are kept on disk in that 
 
 Files of sessions that ended stay behind (the mod API has no way to delete a file). They are skipped when read. Delete the `roll-call` folder whenever you like.
 
-It reads, and never writes, the files Claude Code itself keeps of its sessions (`<Claude Code folder>/sessions/<pid>.json`): the session's name comes from there, and so do the rows of sessions without the mod. Those files stay behind when a process ends, so while the board is on it asks the system which processes run (`tasklist` on Windows, `ps` elsewhere), every 30 seconds at most. It also runs `git` in the session's folder (`rev-parse`, twice). It makes **no** network requests and calls no model. `claude plugin validate .` prints exactly what it hooks and calls.
+It reads, and never writes, the files Claude Code itself keeps of its sessions (`<Claude Code folder>/sessions/<pid>.json`), for one thing: the name you gave this session. Those files are not a documented interface; if a release changes them, a session goes by its folder until the mod catches up. It also runs `git` in the session's folder (`rev-parse`, twice). It makes **no** network requests and calls no model. `claude plugin validate .` prints exactly what it hooks and calls.
 
 ## Configure
 
@@ -101,7 +101,6 @@ In `/config`, or under `pluginConfigs` in `settings.json`:
 
 ## Limits
 
-- **The rows of sessions without the mod lean on files that are not a documented interface.** If a Claude Code release changes them, or the process list cannot be had, those rows go and the board is the sessions that have the mod. A process id the system gave to another program after a session ended would keep that session's row until its file is gone.
 
 - Sessions on this machine only, and only those with the mod loaded.
 - A session is taken for gone after 90 seconds without a write. The board refreshes every 5 seconds.
