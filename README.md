@@ -102,8 +102,6 @@ In `/config`, or under `pluginConfigs` in `settings.json`:
 ## Limits
 
 - **The board is drawn in the terminal.** In the Claude mobile app `/board` answers that the board is on, and nothing is drawn: that surface has no band above the prompt (seen on a session followed from the phone). Claude Code Desktop has such a band, so the board should draw there; nobody has looked yet. A session you follow from an app still gets its row on the board of a terminal window.
-
-
 - Sessions on this machine only, and only those with the mod loaded.
 - A session is taken for gone after 90 seconds without a write. The board refreshes every 5 seconds.
 - Reloading the mod while a workflow runs loses that run's count: its bar is gone, and the run shows as `workflow 1` from the session's next turn end.
