@@ -1,4 +1,4 @@
-# session-board
+# roll-call
 
 A Claude Code mod for people who run several sessions at once. Type `/board` in one window and it lists your other sessions above the prompt: which ones are waiting for you, which are still working, and on what.
 
@@ -13,21 +13,21 @@ It draws nothing until you ask. Only the window you typed `/board` in shows the 
 Claude Code 2.1.287 or later.
 
 ```
-/plugin marketplace add dim-owl/session-board
-/plugin install session-board@session-board
+/plugin marketplace add dim-owl/roll-call
+/plugin install roll-call@roll-call
 /reload-plugins
 ```
 
 Or from a terminal:
 
 ```sh
-claude plugin marketplace add dim-owl/session-board
-claude plugin install session-board@session-board
+claude plugin marketplace add dim-owl/roll-call
+claude plugin install roll-call@roll-call
 ```
 
 Sessions that were already open pick the mod up after `/reload-plugins`. A session shows on the board only if the mod is loaded in it.
 
-To update: `claude plugin marketplace update session-board`, then `claude plugin update session-board@session-board`, then `/reload-plugins`. An install is a copy, so nothing changes until you update. To remove: `claude plugin uninstall session-board@session-board`, and delete the `session-board` folder under your Claude Code folder.
+To update: `claude plugin marketplace update roll-call`, then `claude plugin update roll-call@roll-call`, then `/reload-plugins`. An install is a copy, so nothing changes until you update. To remove: `claude plugin uninstall roll-call@roll-call`, and delete the `roll-call` folder under your Claude Code folder.
 
 ## Use
 
@@ -69,7 +69,7 @@ A working session also shows what it has running: `agents 3` (its subagents), `s
 
 The mod only watches. Every hook passes its event on unchanged; it never denies, rewrites or delays a tool call or a prompt.
 
-Each session writes one small file, `<Claude Code folder>/session-board/<session id>.json`, and the board reads the files of the others (a text read from another session's file has its control characters taken out before it is drawn). A file holds:
+Each session writes one small file, `<Claude Code folder>/roll-call/<session id>.json`, and the board reads the files of the others (a text read from another session's file has its control characters taken out before it is drawn). A file holds:
 
 - the session's name (from `/rename`), the folder it works in and its git branch
 - how it stands, and since when
@@ -79,7 +79,7 @@ Each session writes one small file, `<Claude Code folder>/session-board/<session
 
 Know this before installing: your prompts' first lines are kept on disk in that folder, and shown in any window where the board is on. If you share your screen, the board shares them too.
 
-Files of sessions that ended stay behind (the mod API has no way to delete a file). They are skipped when read. Delete the `session-board` folder whenever you like.
+Files of sessions that ended stay behind (the mod API has no way to delete a file). They are skipped when read. Delete the `roll-call` folder whenever you like.
 
 It also runs `git` in the session's folder (`rev-parse`, twice) and greps the session's own transcript for its name. It makes **no** network requests and calls no model. `claude plugin validate .` prints exactly what it hooks and calls.
 

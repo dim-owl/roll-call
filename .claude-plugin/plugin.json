@@ -1,13 +1,13 @@
 {
-  "name": "session-board",
+  "name": "roll-call",
   "version": "0.1.0",
   "description": "Shows which other Claude Code sessions on this machine are waiting for you, and what they are working on.",
   "author": {
     "name": "dim-owl",
     "url": "https://github.com/dim-owl"
   },
-  "homepage": "https://github.com/dim-owl/session-board",
-  "repository": "https://github.com/dim-owl/session-board",
+  "homepage": "https://github.com/dim-owl/roll-call",
+  "repository": "https://github.com/dim-owl/roll-call",
   "license": "MIT",
   "keywords": ["claude-code", "claude-code-mod", "claude-code-plugin", "sessions", "multi-session", "dashboard"],
   "types": "./types/index.d.ts",

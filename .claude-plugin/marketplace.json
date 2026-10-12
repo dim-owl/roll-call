@@ -1,5 +1,5 @@
 {
-  "name": "session-board",
+  "name": "roll-call",
   "metadata": {
     "description": "A board of your other Claude Code sessions, above the prompt of the window you ask for it in."
   },
@@ -9,7 +9,7 @@
   },
   "plugins": [
     {
-      "name": "session-board",
+      "name": "roll-call",
       "source": "./",
       "description": "Shows which other Claude Code sessions on this machine are waiting for you, and what they are working on."
     }

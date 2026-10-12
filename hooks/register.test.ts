@@ -4,7 +4,7 @@ import type { Engine } from 'claude-code/testing'
 
 import type { Entry } from '../types'
 
-const DIR = 'C:/home/.claude/session-board'
+const DIR = 'C:/home/.claude/roll-call'
 // the session started in C:/work/proj and now runs in a worktree of it
 const TRANSCRIPT = 'C:/home/.claude/projects/C--work-proj/me.jsonl'
 const NOW = 10_000_000
@@ -155,7 +155,7 @@ const board = ($: Engine) => $.command.run({ command: 'board', args: '' } as nev
 
 const draw = async ($: Engine) => {
   const drawn = await $.ui.mount({
-    plugin: 'session-board',
+    plugin: 'roll-call',
     surface: 'terminal',
     component: 'AbovePrompt',
     props: BAND,

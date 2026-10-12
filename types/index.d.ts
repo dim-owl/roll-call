@@ -64,6 +64,6 @@ export type Tag = { text: string; color: string }
 
 declare module 'claude-code' {
   interface PluginState {
-    'session-board': { others: Seen[]; isShown: boolean }
+    'roll-call': { others: Seen[]; isShown: boolean }
   }
 }
