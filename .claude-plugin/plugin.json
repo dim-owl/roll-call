@@ -1,0 +1,23 @@
+{
+  "name": "session-board",
+  "version": "0.1.0",
+  "description": "Shows which other Claude Code sessions on this machine are waiting for you, and what they are working on.",
+  "author": {
+    "name": "dim-owl",
+    "url": "https://github.com/dim-owl"
+  },
+  "homepage": "https://github.com/dim-owl/session-board",
+  "repository": "https://github.com/dim-owl/session-board",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-code-mod", "claude-code-plugin", "sessions", "multi-session", "dashboard"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "language": {
+      "title": "Language",
+      "description": "The language of the board's own words (work, done, ask ...)",
+      "type": "string",
+      "options": ["en", "ko"],
+      "default": "en"
+    }
+  }
+}

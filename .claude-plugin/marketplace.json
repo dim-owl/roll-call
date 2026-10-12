@@ -1,0 +1,17 @@
+{
+  "name": "session-board",
+  "metadata": {
+    "description": "A board of your other Claude Code sessions, above the prompt of the window you ask for it in."
+  },
+  "owner": {
+    "name": "dim-owl",
+    "url": "https://github.com/dim-owl"
+  },
+  "plugins": [
+    {
+      "name": "session-board",
+      "source": "./",
+      "description": "Shows which other Claude Code sessions on this machine are waiting for you, and what they are working on."
+    }
+  ]
+}
