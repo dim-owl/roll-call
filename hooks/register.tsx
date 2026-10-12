@@ -78,9 +78,24 @@ const others = atom({ plugin: 'session-board', key: 'others' } as const, [])
 // The board is drawn in the one window the person asked for it in (/board).
 const isShown = atom({ plugin: 'session-board', key: 'isShown' } as const, false)
 
-// what a text takes on a terminal row: a Hangul or CJK character takes two cells
+// The ranges a terminal draws two cells wide: Hangul, CJK, full-width forms.
+const WIDE: readonly (readonly [number, number])[] = [
+  [0x1100, 0x115f],
+  [0x2e80, 0xa4cf],
+  [0xac00, 0xd7a3],
+  [0xf900, 0xfaff],
+  [0xfe30, 0xfe4f],
+  [0xff00, 0xff60],
+  [0xffe0, 0xffe6],
+]
+
+// what a text takes on a terminal row: an arrow or a dash takes one cell, as a letter does
 const cells = (text: string) =>
-  [...text].reduce((sum, ch) => sum + ((ch.codePointAt(0) ?? 0) >= 0x1100 ? 2 : 1), 0)
+  [...text].reduce((sum, ch) => {
+    const code = ch.codePointAt(0) ?? 0
+
+    return sum + (WIDE.some(([from, to]) => code >= from && code <= to) ? 2 : 1)
+  }, 0)
 
 // the widest word of the language, with a cell on either side of it
 const chipCells = () => Math.max(...Object.values(text.words).map(word => cells(word))) + 2

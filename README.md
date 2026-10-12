@@ -2,7 +2,9 @@
 
 A Claude Code mod for people who run several sessions at once. Type `/board` in one window and it lists your other sessions above the prompt: which ones are waiting for you, which are still working, and on what.
 
-<!-- demo -->
+![The board above the prompt as four sessions change state: one asks a question, one finishes, one runs a workflow](docs/board.svg)
+
+<sub>An illustration, not a recording: the rows are the mod's own output for four made-up sessions, drawn as it draws them.</sub>
 
 It draws nothing until you ask. Only the window you typed `/board` in shows the board; the rest stay as they were.
 
