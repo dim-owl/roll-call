@@ -27,6 +27,8 @@ claude plugin install session-board@session-board
 
 Sessions that were already open pick the mod up after `/reload-plugins`. A session shows on the board only if the mod is loaded in it.
 
+To update: `claude plugin marketplace update session-board`, then `claude plugin update session-board@session-board`, then `/reload-plugins`. An install is a copy, so nothing changes until you update. To remove: `claude plugin uninstall session-board@session-board`, and delete the `session-board` folder under your Claude Code folder.
+
 ## Use
 
 | Command | Does |
@@ -67,7 +69,7 @@ A working session also shows what it has running: `agents 3` (its subagents), `s
 
 The mod only watches. Every hook passes its event on unchanged; it never denies, rewrites or delays a tool call or a prompt.
 
-Each session writes one small file, `<Claude Code folder>/session-board/<session id>.json`, and the board reads the files of the others. A file holds:
+Each session writes one small file, `<Claude Code folder>/session-board/<session id>.json`, and the board reads the files of the others (a text read from another session's file has its control characters taken out before it is drawn). A file holds:
 
 - the session's name (from `/rename`), the folder it works in and its git branch
 - how it stands, and since when
@@ -95,7 +97,7 @@ In `/config`, or under `pluginConfigs` in `settings.json`:
 - **A workflow's own agents are not in `agents N`.** They show only in the bar.
 - **`monitor N` counts the monitors the session started itself.** Claude Code files other things under the same name (the watch left by a published artifact, for one), and those never end, so they are left out.
 - **A short answer is not a new task.** "ok", "yes, go on", "continue" leave the last task standing on the row.
-- **`error` has not been seen live.** It is built from the documented event for a turn that ends on an API error; nobody has hit a usage limit with the board open yet. If it misbehaves, please open an issue.
+- **Two things have not been seen live**, only in tests: `error` (built from the documented event for a turn that ends on an API error; nobody has hit a usage limit with the board open yet), and going on after an in-session `/resume` or `/clear` under the new session id. If either misbehaves, please open an issue.
 
 ## Limits
 

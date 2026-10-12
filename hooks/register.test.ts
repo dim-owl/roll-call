@@ -701,6 +701,21 @@ test('a file that does not hold the shape is passed over, and the rest of the bo
   expect(texts).not.toContain('어긋난 세션')
 })
 
+test('a control character in the file of another session is not drawn', KO, async ($, on) => {
+  const disk: Disk = new Map()
+  world(on, disk)
+  const ESC = String.fromCharCode(27)
+  put(disk, 'a', { name: `검토${ESC}[2J세션`, phase: 'done', note: `끝${ESC}]0;x${String.fromCharCode(7)}났다` })
+
+  await start($)
+  await board($)
+  const texts = await band($)
+
+  expect(texts).toContain('검토 [2J세션')
+  expect(texts).not.toContain(ESC)
+  expect(texts).not.toContain(String.fromCharCode(7))
+})
+
 test('goes on under the new id after a clear or a resume', KO, async ($, on) => {
   const disk: Disk = new Map()
   world(on, disk)
